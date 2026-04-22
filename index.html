@@ -1,24 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Face Recognition</title>
+  <title>Face Recognition Live</title>
 </head>
 <body>
 
-<h2>Face Recognition</h2>
+<h2>Live Face Recognition</h2>
 
-<input type="file" id="fileInput">
-<button onclick="sendImage()">Send</button>
+<video id="video" width="400" autoplay></video>
+<br>
+<button onclick="capture()">Capture & Recognize</button>
 
 <pre id="result"></pre>
 
 <script>
-async function sendImage() {
-    const fileInput = document.getElementById("fileInput");
-    const file = fileInput.files[0];
+const video = document.getElementById('video');
+
+// הפעלת מצלמה
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => {
+    video.srcObject = stream;
+  });
+
+// צילום תמונה ושליחה לשרת
+async function capture() {
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg"));
 
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("image", blob);
 
     const res = await fetch("http://127.0.0.1:5000/recognize", {
         method: "POST",

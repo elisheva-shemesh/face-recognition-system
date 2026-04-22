@@ -104,6 +104,92 @@ def recognize():
 
     return jsonify(results)
 
+@app.route("/")
+def home():
+    return """
+    <h1>Face Recognition System</h1>
+    <a href='/add'>➕ Add Employee</a><br><br>
+    <a href='/attendance'>🕒 Attendance</a>
+    """
+
+@app.route("/add")
+def add_page():
+    return """
+    <h2>Add Employee</h2>
+    <input type='text' id='name' placeholder='Employee name'>
+    <input type='file' id='image'>
+    <button onclick='upload()'>Save</button>
+
+    <script>
+    async function upload() {
+        let name = document.getElementById('name').value;
+        let file = document.getElementById('image').files[0];
+
+        let formData = new FormData();
+        formData.append("name", name);
+        formData.append("image", file);
+
+        await fetch("/add_employee", {
+            method: "POST",
+            body: formData
+        });
+
+        alert("Employee added");
+    }
+    </script>
+    """
+
+@app.route("/add_employee", methods=["POST"])
+def add_employee():
+    name = request.form["name"]
+    file = request.files["image"]
+
+    path = f"employees/{name}.jpg"
+    file.save(path)
+
+    return jsonify({"status": "saved"})
+
+@app.route("/attendance")
+def attendance_page():
+    return """
+    <h2>Attendance</h2>
+
+    <video id="video" width="400" autoplay></video>
+    <br>
+    <button onclick="capture()">Check In/Out</button>
+
+    <pre id="result"></pre>
+
+    <script>
+    const video = document.getElementById('video');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => video.srcObject = stream);
+
+    async function capture() {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
+
+        canvas.toBlob(async (blob) => {
+            let formData = new FormData();
+            formData.append("image", blob);
+
+            let res = await fetch("/recognize", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await res.json();
+            document.getElementById("result").innerText =
+                JSON.stringify(data, null, 2);
+        }, "image/jpeg");
+    }
+    </script>
+    """
 
 if __name__ == "__main__":
     app.run(debug=True)

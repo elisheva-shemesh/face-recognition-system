@@ -1,0 +1,3 @@
+faces.pkl
+__pycache__/
+*.onnx

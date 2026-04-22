@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face Recognition</title>
+</head>
+<body>
+
+<h2>Face Recognition</h2>
+
+<input type="file" id="fileInput">
+<button onclick="sendImage()">Send</button>
+
+<pre id="result"></pre>
+
+<script>
+async function sendImage() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await fetch("http://127.0.0.1:5000/recognize", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+}
+</script>
+
+</body>
+</html>

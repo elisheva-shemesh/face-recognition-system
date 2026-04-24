@@ -9,7 +9,7 @@ from insightface.app import FaceAnalysis
 
 app = Flask(__name__)
 CORS(app)
-
+admins = ["elisheva"]
 # מודל זיהוי פנים
 model = FaceAnalysis(name='buffalo_l')
 model.prepare(ctx_id=-1)
@@ -190,6 +190,81 @@ def attendance_page():
     }
     </script>
     """
+
+@app.route("/employees", methods=["GET"])
+def get_employees():
+    return jsonify(known_names)
+    
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.json
+
+    user = users.get(data["username"])
+
+    if user and user["password"] == data["password"]:
+        return jsonify({
+            "success": True,
+            "role": user["role"],
+            "username": data["username"]
+        })
+
+    return jsonify({"success": False}), 401
+
+@app.route("/report/<name>", methods=["GET"])
+def report(name):
+    conn = sqlite3.connect("attendance.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT date, check_in, check_out
+        FROM attendance
+        WHERE name=?
+        ORDER BY date DESC
+    """, (name,))
+
+    data = cursor.fetchall()
+    conn.close()
+
+    return jsonify(data)
+
+@app.route("/identify", methods=["POST"])
+def identify():
+    file = request.files["image"]
+    img_bytes = file.read()
+
+    np_arr = np.frombuffer(img_bytes, np.uint8)
+    frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+    faces = model.get(frame)
+
+    for face in faces:
+        embedding = face.embedding
+
+        best_score = 0
+        best_name = "Unknown"
+
+        for i, known_embedding in enumerate(known_embeddings):
+            score = cosine_similarity(embedding, known_embedding)
+
+            if score > best_score:
+                best_score = score
+                best_name = known_names[i]
+
+        if best_score < 0.5:
+            best_name = "Unknown"
+
+        is_admin = best_name in admins
+
+        return jsonify({
+            "name": best_name,
+            "is_admin": is_admin
+        })
+
+    return jsonify({
+        "name": "Unknown",
+        "is_admin": False
+    })
+
 
 if __name__ == "__main__":
     app.run(debug=True)

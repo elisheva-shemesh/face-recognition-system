@@ -1,4 +1,17 @@
-<h1>Face Recognition System</h1>
+<h1>Welcome to Attendance System</h1>
 
-<button routerLink="/add">➕ Add Employee</button>
-<button routerLink="/attendance">🕒 Attendance</button>
+<div class="menu">
+
+  <button (click)="goToFace()">
+    👤 כניסה / יציאה (זיהוי פנים)
+  </button>
+
+  <button (click)="goToReport()">
+    📊 דוח עובד
+  </button>
+
+  <button routerLink="/admin-login">
+    🔐 ניהול הרשאות
+  </button>
+
+</div>

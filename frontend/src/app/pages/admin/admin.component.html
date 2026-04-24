@@ -1,0 +1,27 @@
+<h2 class="title">Admin Dashboard</h2>
+
+<div class="container">
+
+  <div class="actions">
+    <button (click)="goToAdd()">➕ Add Employee</button>
+    <button (click)="loadEmployees()">👥 Load Employees</button>
+    <button (click)="logout()">🚪 Logout</button>
+  </div>
+
+  <input 
+    type="text" 
+    placeholder="Search employee..." 
+    [(ngModel)]="searchText"
+  />
+
+  <table *ngIf="filteredEmployees.length" class="table">
+    <tr>
+      <th>Name</th>
+    </tr>
+
+    <tr *ngFor="let e of filteredEmployees">
+      <td>{{ e }}</td>
+    </tr>
+  </table>
+
+</div>

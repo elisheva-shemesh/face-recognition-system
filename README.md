@@ -1,18 +1,38 @@
 # Face Recognition Attendance System
 
-## Description
-System for face recognition using InsightFace
+## 📌 Overview
+A smart attendance system using face recognition.
+Employees can check in/out automatically, and admins manage the system.
 
-## Technologies
-- Python
-- Flask
-- InsightFace
-- OpenCV
+---
 
-## How to Run
+## 🚀 Features
+
+### 👤 Employee
+- Face recognition attendance
+- Personal monthly report
+- Total worked hours
+
+### 👑 Admin
+- Face recognition login
+- Employee management
+- Employee search
+- Add new employees
+
+---
+
+## 🛠️ Tech Stack
+
+- Frontend: Angular
+- Backend: Flask (Python)
+- Database: SQLite
+- AI: InsightFace
+
+---
+
+## ▶️ How to Run
 
 ### Backend
+```bash
+cd backend
 python server.py
-
-### Frontend
-python -m http.server 5500

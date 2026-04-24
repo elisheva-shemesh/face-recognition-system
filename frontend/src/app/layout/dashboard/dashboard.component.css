@@ -1,0 +1,27 @@
+.cards {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .card {
+    padding: 20px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    flex: 1;
+    text-align: center;
+  }
+  tr.done td {
+    background-color: #d1fae5;
+  }
+  
+  tr.inside td {
+    background-color: #fef9c3;
+  }
+  
+  tr.none td {
+    background-color: #fee2e2;
+  }
+  
+  td {
+    padding: 8px;
+  }

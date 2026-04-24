@@ -27,4 +27,22 @@ export class ApiService {
       body: formData
     }).then(res => res.json());
   }
+
+  async getEmployees() {
+    return fetch(`${this.baseUrl}/employees`)
+      .then(res => res.json());
+  }
+  async getReport(name: string) {
+    return fetch(`http://127.0.0.1:5000/report/${name}`)
+      .then(res => res.json());
+  }
+  async identify(blob: Blob) {
+    const formData = new FormData();
+    formData.append('image', blob);
+  
+    return fetch(`${this.baseUrl}/identify`, {
+      method: 'POST',
+      body: formData
+    }).then(res => res.json());
+  }
 }

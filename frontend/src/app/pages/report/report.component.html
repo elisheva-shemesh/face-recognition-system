@@ -1,0 +1,43 @@
+<h2 class="title">Employee Report</h2>
+
+<div class="container">
+
+  <!-- 📸 מצלמה -->
+  <div *ngIf="showCamera">
+
+    <video #video class="video" autoplay></video>
+
+    <button class="btn" (click)="capture()">
+      📸 Identify Me
+    </button>
+
+  </div>
+
+  <!-- 📊 דוח -->
+  <div *ngIf="!showCamera && report?.length" class="report-box">
+
+    <h3 class="hours">
+      Total Hours: {{ totalHours | number:'1.1-2' }}
+    </h3>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Check In</th>
+          <th>Check Out</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let r of report">
+          <td>{{ r[0] }}</td>
+          <td>{{ r[1] }}</td>
+          <td>{{ r[2] }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+</div>

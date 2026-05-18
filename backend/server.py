@@ -1,20 +1,27 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from deepface import DeepFace
-import os
 import cv2
 import numpy as np
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-# תיקיית מאגר פנים
-DB_PATH = "employees"
-os.makedirs(DB_PATH, exist_ok=True)
+EMP_DIR = "employees"
+os.makedirs(EMP_DIR, exist_ok=True)
 
 
 # =========================
-# ➕ הוספת עובד למאגר
+# 🧠 יצירת "חתימה" לתמונה
+# =========================
+def image_signature(img):
+    img = cv2.resize(img, (50, 50))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return img.flatten().mean()
+
+
+# =========================
+# ➕ הוספת עובד
 # =========================
 @app.route("/add_employee", methods=["POST"])
 def add_employee():
@@ -22,72 +29,74 @@ def add_employee():
     file = request.files.get("image")
 
     if not name or not file:
-        return jsonify({"error": "missing name or image"}), 400
+        return jsonify({"error": "missing data"}), 400
 
-    path = os.path.join(DB_PATH, f"{name}.jpg")
+    path = os.path.join(EMP_DIR, f"{name}.jpg")
     file.save(path)
 
     return jsonify({"status": "saved", "name": name})
 
 
 # =========================
-# 🔍 זיהוי פנים
+# 🔍 זיהוי
 # =========================
 @app.route("/recognize", methods=["POST"])
 def recognize():
     file = request.files.get("image")
 
     if not file:
-        return jsonify({"error": "no image provided"}), 400
+        return jsonify({"error": "no image"}), 400
 
     np_arr = np.frombuffer(file.read(), np.uint8)
     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-    try:
-        results = DeepFace.find(
-            img_path=img,
-            db_path=DB_PATH,
-            enforce_detection=False
-        )
+    current_sig = image_signature(img)
 
-        # אם לא נמצא כלום
-        if len(results) == 0 or results[0].empty:
-            return jsonify([{"name": "Unknown", "score": 0}])
+    best_name = "Unknown"
+    best_score = float("inf")
 
-        best = results[0].iloc[0]
+    for f in os.listdir(EMP_DIR):
+        ref_img = cv2.imread(os.path.join(EMP_DIR, f))
+        if ref_img is None:
+            continue
 
-        name = os.path.basename(best["identity"]).split(".")[0]
-        distance = float(best["distance"])
+        ref_sig = image_signature(ref_img)
+        score = abs(current_sig - ref_sig)
 
-        return jsonify([{
-            "name": name,
-            "score": distance
-        }])
+        if score < best_score:
+            best_score = score
+            best_name = f.split(".")[0]
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # סף זיהוי (אפשר לכוון)
+    if best_score > 20:
+        best_name = "Unknown"
+
+    return jsonify({
+        "name": best_name,
+        "score": float(best_score)
+    })
 
 
 # =========================
-# 📋 רשימת עובדים
+# 📋 עובדים
 # =========================
 @app.route("/employees", methods=["GET"])
 def employees():
-    files = os.listdir(DB_PATH)
+    files = os.listdir(EMP_DIR)
     names = [f.split(".")[0] for f in files]
     return jsonify(names)
 
 
 # =========================
-# 🏠 בדיקה שהשרת עובד
+# 🏠 בדיקה
 # =========================
 @app.route("/")
 def home():
-    return "DeepFace API is running 🚀"
+    return "Face Recognition API (FREE VERSION) is running 🚀"
 
 
 # =========================
-# ▶️ הפעלה מקומית בלבד
+# ▶️ הרצה מקומית
 # =========================
 if __name__ == "__main__":
     app.run(debug=True)
